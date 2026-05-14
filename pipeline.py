@@ -3,7 +3,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
 from qdrant_client import QdrantClient, models
 from qdrant_client.models import Distance, VectorParams
-
+import os
 
 Ebook_pdf = "data/Ebook.pdf"
 
@@ -11,7 +11,8 @@ model_embedding = "bge-m3"
 Ollama_Url = "http://localhost:11434"
 model_dimencoes = 1024
 
-Qdrant_Url = "http://localhost:6333"
+Qdrant_Url= os.getenv("QDRANT_URL")
+api_key_qdrant= os.getenv("QDRANT_API_KEY")
 COLLETION = "Guia_Ebook"
 
 CHUNK_SIZE = 600
@@ -51,7 +52,7 @@ embeddings = gerar_embedding(chunks)
 
 #Adcionar ao banco vetorial.
 
-Qdrant_client = QdrantClient(url=Qdrant_Url)
+Qdrant_client = QdrantClient(url=Qdrant_Url,api_key=api_key_qdrant)
 
 def criar_banco_qdrant():
     colecoes = [i.name for i in Qdrant_client.get_collections().collections]
@@ -87,11 +88,16 @@ def adcionar_points(chunks, embeddings):
 
 pontos = adcionar_points(chunks,embeddings)
 
-def enviar_qdrant(points):
-    Qdrant_client.upsert(
-        collection_name= COLLETION,
-        points= points
-    )
-    print("Enviado")
+
+def enviar_qdrant(points, batch_size=100):
+    total = len(points)
+    
+    for i in range(0, total, batch_size):
+        batch = points[i : i + batch_size]
+        Qdrant_client.upsert(
+            collection_name=COLLETION,
+            points=batch,)
+    
+    print("enviado")
 
 enviar_qdrant(pontos)
