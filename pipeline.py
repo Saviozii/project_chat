@@ -1,11 +1,13 @@
+#Pipeline com qdrant
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
 from qdrant_client import QdrantClient, models
 from qdrant_client.models import Distance, VectorParams
 import os
+import pyd
 
-Ebook_pdf = "data/Ebook.pdf"
+Ebook_pdf = os.getenv("EBOOK_PDF")
 
 model_embedding = "bge-m3"
 Ollama_Url = "http://localhost:11434"
@@ -56,8 +58,7 @@ Qdrant_client = QdrantClient(url=Qdrant_Url,api_key=api_key_qdrant)
 
 def criar_banco_qdrant():
     colecoes = [i.name for i in Qdrant_client.get_collections().collections]
-
-
+    
     if COLLETION in colecoes:
         print("Ja tem")
     else:
