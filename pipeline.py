@@ -5,7 +5,6 @@ from langchain_ollama import OllamaEmbeddings
 from qdrant_client import QdrantClient, models
 from qdrant_client.models import Distance, VectorParams
 import os
-import pyd
 
 Ebook_pdf = os.getenv("EBOOK_PDF")
 
@@ -19,7 +18,6 @@ COLLETION = "Guia_Ebook"
 
 CHUNK_SIZE = 600
 CHUNK_OVERLAP = 100
-
 
 #Pego o arquivo
 def ler_pdf():
@@ -54,7 +52,8 @@ embeddings = gerar_embedding(chunks)
 
 #Adcionar ao banco vetorial.
 
-Qdrant_client = QdrantClient(url=Qdrant_Url,api_key=api_key_qdrant)
+Qdrant_client = QdrantClient(url=Qdrant_Url,
+                            api_key=api_key_qdrant)
 
 def criar_banco_qdrant():
     colecoes = [i.name for i in Qdrant_client.get_collections().collections]
@@ -87,8 +86,8 @@ def adcionar_points(chunks, embeddings):
         pontos.append(ponto)
     return pontos
 
-pontos = adcionar_points(chunks,embeddings)
 
+pontos = adcionar_points(chunks,embeddings)
 
 def enviar_qdrant(points, batch_size=100):
     total = len(points)

@@ -25,7 +25,7 @@ Regras obrigatórias:
 - Após responder a pergunta com os dados do contexto, PARE. Não adicione
   frases como "posso ajudá-lo com mais informações" ou "se precisar de
   mais detalhes". Responda apenas o que foi perguntado.
-- Quando possível, cite o número da página entre colchetes, ex: [Página 12].
+- Quando possível(somente se existir), cite o número da página entre colchetes, ex: [Página 12].
 - Se a resposta envolver uma lista de itens, use marcadores (•).
 - PROIBIDO inventar qualquer dado como nomes, e-mails, telefones,
   redes sociais, endereços ou valores numéricos. Se não estiver
@@ -107,10 +107,18 @@ def resposta_guida(sequisabe,sequisabess):
   resposta = guida_llm.invoke(prompt)
   return resposta
 
+def perguntar():
+  duvida = str(input("Qual sua duvida? "))
+  pergunta = embedding_pergunta(duvida)
+  contexto = busca_qdrant(pergunta)
+  guida_prompt(contexto,duvida)
+  resposta = resposta_guida(contexto,duvida)
+  print(resposta)
 
-duvida = str(input("Qual sua duvida? "))
-pergunta = embedding_pergunta(duvida)
-contexto = busca_qdrant(pergunta)
-guida_prompt(contexto,duvida)
-resposta = resposta_guida(contexto,duvida)
-print(resposta)
+perguntar()
+
+try:
+  while True:
+    perguntar()
+except KeyboardInterrupt:
+  print("Chat Finalizado")
