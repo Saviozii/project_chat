@@ -16,6 +16,7 @@ Regras obrigatórias:
 - Responda como uma pessoa real conversando, não como um relatório formal.
 - Use linguagem simples e acolhedora, como se estivesse ajudando um amigo.
 - Responda somente com base no CONTEXTO DO DOCUMENTO ou no HISTÓRICO DA CONVERSA.
+- Primeiro Olhe o HISTÓRICO DA CONVERSA antes de responder 
 - Se o usuário mencionou algo sobre si mesmo no histórico (como nome, curso,
   situação), use essa informação para personalizar a resposta.
 - Se a informação não estiver nem no contexto nem no histórico, diga exatamente:
@@ -39,6 +40,9 @@ Regras obrigatórias:
 - NUNCA invente intervalos de páginas como "Páginas 10-23". Cite apenas
   páginas que aparecem literalmente no contexto recebido.
 
+HISTÓRICO DA CONVERSA:
+{historico}
+
 CONTEXTO DO DOCUMENTO:
 {contexto}
 
@@ -46,8 +50,7 @@ PERGUNTA ATUAL:
 {pergunta}
 
 RESPOSTA:
-  
-  """
+"""
 
 Ebook_pdf = os.getenv("EBOOK_PDF")
 
@@ -86,36 +89,46 @@ def busca_qdrant(pergunta,top_k=5):
 
 
 prompt_template = PromptTemplate.from_template(PROMPT_TEMPLATE)
-#So transformei o prompt em funcao
-def guida_prompt(contexto,pergunta):
-  
-  return prompt_template.format(
-    contexto=contexto,
-    pergunta=pergunta,
-  )
+
 
 guida_llm = OllamaLLM(
   model= Ollama_model,
   base_url= Ollama_Url,
 )
 
-def resposta_guida(sequisabe,sequisabess):
+
+def memoria(historico):
+  ultimas_msg = 6
+  recente = historico[-ultimas_msg:]#pega os ultimos 6 de entro da lista
+  
+  linhas = []
+  for i in recente:
+    linhas.append(f"Usuario: {i['usuario_msg']}")
+    linhas.append(f"Guida: {i['guida_msg']}")
+  return "\n".join(linhas) #junto tudo um em baixo do outro
+
+
+def resposta_guida(contexto,duvida,historico):
   prompt = prompt_template.format(
-    contexto=sequisabe,
-    pergunta=sequisabess,
+    historico=memoria(historico),
+    contexto=contexto,
+    pergunta=duvida,
   )
   resposta = guida_llm.invoke(prompt)
+  historico.append({
+    "usuario_msg":duvida,
+    "guida_msg": resposta
+  })
   return resposta
+
+historico = []
 
 def perguntar():
   duvida = str(input("Qual sua duvida? "))
   pergunta = embedding_pergunta(duvida)
   contexto = busca_qdrant(pergunta)
-  guida_prompt(contexto,duvida)
-  resposta = resposta_guida(contexto,duvida)
+  resposta = resposta_guida(contexto,duvida,historico)
   print(resposta)
-
-perguntar()
 
 try:
   while True:
