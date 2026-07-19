@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guida · Guia de Acesso e Permanência</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF2ED;
+    --surface:#FFFFFF;
+    --ink:#1F3D2E;
+    --ink-soft:#4C5D53;
+    --accent:#C9973A;
+    --accent-soft:#EAD3A0;
+    --user-bubble:#1F3D2E;
+    --user-text:#F5F1E6;
+    --bot-border:#D9E1DA;
+    --error:#9B4630;
+    --line:#C7D2C9;
+    --radius:16px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    height:100%;
+    margin:0;
+    background:var(--bg);
+    font-family:'Work Sans', sans-serif;
+    color:var(--ink);
+  }
+
+  .app{
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    max-width:720px;
+    margin:0 auto;
+    background:var(--bg);
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    padding:20px 24px 16px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    border-bottom:1px solid var(--line);
+    flex-shrink:0;
+  }
+
+  .compass{
+    width:40px;
+    height:40px;
+    flex-shrink:0;
+  }
+
+  header h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:26px;
+    margin:0;
+    line-height:1;
+    color:var(--ink);
+  }
+
+  header p{
+    margin:4px 0 0;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+
+  .header-text{ flex:1; min-width:0; }
+
+  .settings-toggle{
+    background:none;
+    border:1px solid var(--line);
+    border-radius:999px;
+    width:34px;
+    height:34px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .settings-toggle:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .settings-panel{
+    padding:0 24px;
+    max-height:0;
+    overflow:hidden;
+    background:var(--surface);
+    border-bottom:1px solid transparent;
+    transition:max-height .2s ease, padding .2s ease, border-color .2s ease;
+    flex-shrink:0;
+  }
+  .settings-panel.open{
+    max-height:120px;
+    padding:14px 24px;
+    border-bottom-color:var(--line);
+  }
+  .settings-panel label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .settings-panel input{
+    width:100%;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-family:'Work Sans', sans-serif;
+    font-size:13px;
+    color:var(--ink);
+    background:var(--bg);
+  }
+  .settings-panel .hint{
+    margin-top:8px;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+  }
+
+  /* ---------- Messages / trail ---------- */
+  .messages{
+    flex:1;
+    overflow-y:auto;
+    padding:24px 24px 8px 20px;
+    counter-reset:waypoint;
+  }
+
+  .turn{
+    position:relative;
+    padding-left:26px;
+    margin-bottom:22px;
+  }
+  .turn::before{
+    content:"";
+    position:absolute;
+    left:9px;
+    top:2px;
+    bottom:-22px;
+    border-left:2px dashed var(--line);
+  }
+  .turn:last-child::before{ display:none; }
+
+  .row{
+    display:flex;
+    margin-bottom:10px;
+  }
+  .row.user{ justify-content:flex-end; }
+  .row.bot{ justify-content:flex-start; }
+
+  .bubble{
+    max-width:82%;
+    padding:11px 15px;
+    border-radius:var(--radius);
+    font-size:14.5px;
+    line-height:1.5;
+    white-space:pre-wrap;
+  }
+  .row.user .bubble{
+    background:var(--user-bubble);
+    color:var(--user-text);
+    border-bottom-right-radius:4px;
+  }
+  .row.bot .bubble{
+    background:var(--surface);
+    border:1px solid var(--bot-border);
+    border-bottom-left-radius:4px;
+    position:relative;
+  }
+
+  .row.bot .marker{
+    position:absolute;
+    left:-26px;
+    top:2px;
+    width:19px;
+    height:19px;
+    border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    font-size:10px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    counter-increment:waypoint;
+  }
+  .row.bot .marker::after{ content: counter(waypoint); }
+
+  .row.error .bubble{
+    background:#FBEDE8;
+    border:1px solid var(--error);
+    color:var(--error);
+  }
+
+  .typing{
+    display:inline-flex;
+    gap:4px;
+    padding:4px 2px;
+  }
+  .typing span{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--ink-soft);
+    opacity:.5;
+    animation:bounce 1.2s infinite ease-in-out;
+  }
+  .typing span:nth-child(2){ animation-delay:.15s; }
+  .typing span:nth-child(3){ animation-delay:.3s; }
+  @keyframes bounce{
+    0%,60%,100%{ transform:translateY(0); opacity:.5; }
+    30%{ transform:translateY(-4px); opacity:1; }
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--ink-soft);
+  }
+  .empty-state .compass{ margin:0 auto 12px; opacity:.8; }
+  .empty-state h2{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:19px;
+    color:var(--ink);
+    margin:0 0 6px;
+  }
+  .empty-state p{ font-size:13.5px; margin:0; }
+
+  /* ---------- Composer ---------- */
+  .composer{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+    padding:14px 20px 18px;
+    border-top:1px solid var(--line);
+    background:var(--bg);
+    flex-shrink:0;
+  }
+  textarea{
+    flex:1;
+    resize:none;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:11px 14px;
+    font-family:'Work Sans', sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+    background:var(--surface);
+    max-height:120px;
+    line-height:1.4;
+  }
+  textarea:focus{
+    outline:none;
+    border-color:var(--accent);
+  }
+  button.send{
+    background:var(--accent);
+    border:none;
+    color:#fff;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    transition:background .15s ease, transform .1s ease;
+  }
+  button.send:hover:not(:disabled){ background:#B58731; }
+  button.send:active:not(:disabled){ transform:scale(.94); }
+  button.send:disabled{ background:var(--accent-soft); cursor:not-allowed; }
+
+  ::-webkit-scrollbar{ width:8px; }
+  ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:8px; }
+
+  @media (prefers-reduced-motion: reduce){
+    .typing span{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <svg class="compass" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="18" stroke="#1F3D2E" stroke-width="1.6"/>
+      <circle cx="20" cy="20" r="1.8" fill="#C9973A"/>
+      <path d="M20 8 L23.5 20 L20 32 L16.5 20 Z" fill="#1F3D2E"/>
+      <path d="M20 8 L23.5 20 L20 20 Z" fill="#C9973A"/>
+    </svg>
+    <div class="header-text">
+      <h1>Guida</h1>
+      <p>Sua bússola para o acesso e a permanência na universidade</p>
+    </div>
+    <button class="settings-toggle" id="settingsToggle" title="Configurações da API" aria-label="Configurações da API">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="settings-panel" id="settingsPanel">
+    <label for="apiUrlInput">Endereço da API (endpoint /perg)</label>
+    <input type="text" id="apiUrlInput" value="/perg">
+    <p class="hint">Como o front é servido pelo próprio FastAPI (StaticFiles), o caminho relativo "/perg" já funciona. Só troque se for apontar pra outro servidor.</p>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="empty-state" id="emptyState">
+      <svg class="compass" width="36" height="36" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="18" stroke="#4C5D53" stroke-width="1.4"/>
+        <circle cx="20" cy="20" r="1.6" fill="#C9973A"/>
+        <path d="M20 8 L23.5 20 L20 32 L16.5 20 Z" fill="#4C5D53"/>
+      </svg>
+      <h2>Por onde começamos?</h2>
+      <p>Pergunte sobre acesso, permanência ou qualquer dúvida sobre a universidade.</p>
+    </div>
+  </div>
+
+  <div class="composer">
+    <textarea id="input" rows="1" placeholder="Digite sua dúvida..."></textarea>
+    <button class="send" id="sendBtn" aria-label="Enviar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9 22 2Z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  let historico = [];
+  let sending = false;
+
+  const messagesEl = document.getElementById('messages');
+  const emptyState = document.getElementById('emptyState');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('sendBtn');
+  const apiUrlInput = document.getElementById('apiUrlInput');
+  const settingsToggle = document.getElementById('settingsToggle');
+  const settingsPanel = document.getElementById('settingsPanel');
+
+  settingsToggle.addEventListener('click', () => {
+    settingsPanel.classList.toggle('open');
+  });
+
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      enviar();
+    }
+  });
+
+  sendBtn.addEventListener('click', enviar);
+
+  function scrollToBottom(){
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function startTurn(){
+    if (emptyState) emptyState.remove();
+    const turn = document.createElement('div');
+    turn.className = 'turn';
+    messagesEl.appendChild(turn);
+    return turn;
+  }
+
+  function addUserRow(turn, texto){
+    const row = document.createElement('div');
+    row.className = 'row user';
+    row.innerHTML = `<div class="bubble"></div>`;
+    row.querySelector('.bubble').textContent = texto;
+    turn.appendChild(row);
+    scrollToBottom();
+  }
+
+  function addTypingRow(turn){
+    const row = document.createElement('div');
+    row.className = 'row bot';
+    row.id = 'typingRow';
+    row.innerHTML = `
+      <div class="bubble">
+        <div class="typing"><span></span><span></span><span></span></div>
+      </div>`;
+    turn.appendChild(row);
+    scrollToBottom();
+    return row;
+  }
+
+  function addBotRow(turn, texto){
+    const row = document.createElement('div');
+    row.className = 'row bot';
+    row.innerHTML = `<span class="marker"></span><div class="bubble"></div>`;
+    row.querySelector('.bubble').textContent = texto;
+    turn.appendChild(row);
+    scrollToBottom();
+  }
+
+  function addErrorRow(turn, texto){
+    const row = document.createElement('div');
+    row.className = 'row bot error';
+    row.innerHTML = `<div class="bubble"></div>`;
+    row.querySelector('.bubble').textContent = texto;
+    turn.appendChild(row);
+    scrollToBottom();
+  }
+
+  async function enviar(){
+    const pergunta = input.value.trim();
+    if (!pergunta || sending) return;
+
+    const apiUrl = apiUrlInput.value.trim();
+    if (!apiUrl) {
+      alert('Informe o endereço da API nas configurações.');
+      return;
+    }
+
+    sending = true;
+    sendBtn.disabled = true;
+    input.value = '';
+    input.style.height = 'auto';
+
+    const turn = startTurn();
+    addUserRow(turn, pergunta);
+    const typingRow = addTypingRow(turn);
+
+    try {
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pergunta, historico })
+      });
+
+      if (!res.ok) {
+        throw new Error('A API respondeu com status ' + res.status);
+      }
+
+      const data = await res.json();
+      historico = data.historico || historico;
+      typingRow.remove();
+      addBotRow(turn, data.resposta);
+
+    } catch (err) {
+      typingRow.remove();
+      addErrorRow(turn, 'Não consegui falar com a Guida agora. Verifique se a API está rodando e se o CORS está liberado. (' + err.message + ')');
+    } finally {
+      sending = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+</script>
+
+</body>
+</html>

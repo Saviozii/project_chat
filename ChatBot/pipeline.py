@@ -5,6 +5,8 @@ from langchain_ollama import OllamaEmbeddings
 from qdrant_client import QdrantClient, models
 from qdrant_client.models import Distance, VectorParams
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 Ebook_pdf = os.getenv("EBOOK_PDF")
 

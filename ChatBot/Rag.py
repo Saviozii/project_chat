@@ -1,7 +1,5 @@
 #Rag para busca no qdrant.
 from langchain_core.prompts import PromptTemplate
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_community.llms import Ollama
 from langchain_ollama.embeddings import OllamaEmbeddings
 import os
 from qdrant_client import QdrantClient, models
@@ -52,8 +50,6 @@ PERGUNTA ATUAL:
 RESPOSTA:
 """
 
-Ebook_pdf = os.getenv("EBOOK_PDF")
-
 Ollama_Url = "http://localhost:11434"
 embedding_model = "bge-m3"
 Ollama_model= "gemma4"
@@ -88,15 +84,6 @@ def busca_qdrant(pergunta,top_k=5):
   return contexto
 
 
-prompt_template = PromptTemplate.from_template(PROMPT_TEMPLATE)
-
-
-guida_llm = OllamaLLM(
-  model= Ollama_model,
-  base_url= Ollama_Url,
-)
-
-
 def memoria(historico):
   ultimas_msg = 6
   recente = historico[-ultimas_msg:]#pega os ultimos 6 de entro da lista
@@ -105,7 +92,16 @@ def memoria(historico):
   for i in recente:
     linhas.append(f"Usuario: {i['usuario_msg']}")
     linhas.append(f"Guida: {i['guida_msg']}")
-  return "\n".join(linhas) #junto tudo um em baixo do outro
+  return "\n".join(linhas) #junta tudo um em baixo do outro
+
+
+prompt_template = PromptTemplate.from_template(PROMPT_TEMPLATE)
+
+
+guida_llm = OllamaLLM(
+  model= Ollama_model,
+  base_url= Ollama_Url,
+)
 
 
 def resposta_guida(contexto,duvida,historico):
@@ -129,9 +125,12 @@ def perguntar():
   contexto = busca_qdrant(pergunta)
   resposta = resposta_guida(contexto,duvida,historico)
   print(resposta)
+  print("\n")
+  print(historico)
 
-try:
-  while True:
-    perguntar()
-except KeyboardInterrupt:
-  print("Chat Finalizado")
+if __name__ == "__main__":
+    try:
+        while True:
+            perguntar()
+    except KeyboardInterrupt:
+        print("Chat Finalizado")
