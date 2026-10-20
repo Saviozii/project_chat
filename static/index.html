@@ -3,471 +3,678 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guida · Guia de Acesso e Permanência</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#EEF2ED;
-    --surface:#FFFFFF;
-    --ink:#1F3D2E;
-    --ink-soft:#4C5D53;
-    --accent:#C9973A;
-    --accent-soft:#EAD3A0;
-    --user-bubble:#1F3D2E;
-    --user-text:#F5F1E6;
-    --bot-border:#D9E1DA;
-    --error:#9B4630;
-    --line:#C7D2C9;
-    --radius:16px;
-  }
-
-  *{ box-sizing:border-box; }
-
-  html,body{
-    height:100%;
-    margin:0;
-    background:var(--bg);
-    font-family:'Work Sans', sans-serif;
-    color:var(--ink);
-  }
-
-  .app{
-    display:flex;
-    flex-direction:column;
-    height:100vh;
-    max-width:720px;
-    margin:0 auto;
-    background:var(--bg);
-  }
-
-  /* ---------- Header ---------- */
-  header{
-    padding:20px 24px 16px;
-    display:flex;
-    align-items:center;
-    gap:14px;
-    border-bottom:1px solid var(--line);
-    flex-shrink:0;
-  }
-
-  .compass{
-    width:40px;
-    height:40px;
-    flex-shrink:0;
-  }
-
-  header h1{
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-style:italic;
-    font-size:26px;
-    margin:0;
-    line-height:1;
-    color:var(--ink);
-  }
-
-  header p{
-    margin:4px 0 0;
-    font-size:13px;
-    color:var(--ink-soft);
-  }
-
-  .header-text{ flex:1; min-width:0; }
-
-  .settings-toggle{
-    background:none;
-    border:1px solid var(--line);
-    border-radius:999px;
-    width:34px;
-    height:34px;
-    cursor:pointer;
-    color:var(--ink-soft);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-    transition:border-color .15s ease, color .15s ease;
-  }
-  .settings-toggle:hover{ border-color:var(--accent); color:var(--accent); }
-
-  .settings-panel{
-    padding:0 24px;
-    max-height:0;
-    overflow:hidden;
-    background:var(--surface);
-    border-bottom:1px solid transparent;
-    transition:max-height .2s ease, padding .2s ease, border-color .2s ease;
-    flex-shrink:0;
-  }
-  .settings-panel.open{
-    max-height:120px;
-    padding:14px 24px;
-    border-bottom-color:var(--line);
-  }
-  .settings-panel label{
-    display:block;
-    font-size:12px;
-    color:var(--ink-soft);
-    margin-bottom:6px;
-  }
-  .settings-panel input{
-    width:100%;
-    padding:8px 10px;
-    border:1px solid var(--line);
-    border-radius:8px;
-    font-family:'Work Sans', sans-serif;
-    font-size:13px;
-    color:var(--ink);
-    background:var(--bg);
-  }
-  .settings-panel .hint{
-    margin-top:8px;
-    font-size:11.5px;
-    color:var(--ink-soft);
-    line-height:1.5;
-  }
-
-  /* ---------- Messages / trail ---------- */
-  .messages{
-    flex:1;
-    overflow-y:auto;
-    padding:24px 24px 8px 20px;
-    counter-reset:waypoint;
-  }
-
-  .turn{
-    position:relative;
-    padding-left:26px;
-    margin-bottom:22px;
-  }
-  .turn::before{
-    content:"";
-    position:absolute;
-    left:9px;
-    top:2px;
-    bottom:-22px;
-    border-left:2px dashed var(--line);
-  }
-  .turn:last-child::before{ display:none; }
-
-  .row{
-    display:flex;
-    margin-bottom:10px;
-  }
-  .row.user{ justify-content:flex-end; }
-  .row.bot{ justify-content:flex-start; }
-
-  .bubble{
-    max-width:82%;
-    padding:11px 15px;
-    border-radius:var(--radius);
-    font-size:14.5px;
-    line-height:1.5;
-    white-space:pre-wrap;
-  }
-  .row.user .bubble{
-    background:var(--user-bubble);
-    color:var(--user-text);
-    border-bottom-right-radius:4px;
-  }
-  .row.bot .bubble{
-    background:var(--surface);
-    border:1px solid var(--bot-border);
-    border-bottom-left-radius:4px;
-    position:relative;
-  }
-
-  .row.bot .marker{
-    position:absolute;
-    left:-26px;
-    top:2px;
-    width:19px;
-    height:19px;
-    border-radius:50%;
-    background:var(--accent);
-    color:#fff;
-    font-size:10px;
-    font-weight:600;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    counter-increment:waypoint;
-  }
-  .row.bot .marker::after{ content: counter(waypoint); }
-
-  .row.error .bubble{
-    background:#FBEDE8;
-    border:1px solid var(--error);
-    color:var(--error);
-  }
-
-  .typing{
-    display:inline-flex;
-    gap:4px;
-    padding:4px 2px;
-  }
-  .typing span{
-    width:6px;
-    height:6px;
-    border-radius:50%;
-    background:var(--ink-soft);
-    opacity:.5;
-    animation:bounce 1.2s infinite ease-in-out;
-  }
-  .typing span:nth-child(2){ animation-delay:.15s; }
-  .typing span:nth-child(3){ animation-delay:.3s; }
-  @keyframes bounce{
-    0%,60%,100%{ transform:translateY(0); opacity:.5; }
-    30%{ transform:translateY(-4px); opacity:1; }
-  }
-
-  .empty-state{
-    text-align:center;
-    padding:40px 20px;
-    color:var(--ink-soft);
-  }
-  .empty-state .compass{ margin:0 auto 12px; opacity:.8; }
-  .empty-state h2{
-    font-family:'Fraunces', serif;
-    font-style:italic;
-    font-weight:500;
-    font-size:19px;
-    color:var(--ink);
-    margin:0 0 6px;
-  }
-  .empty-state p{ font-size:13.5px; margin:0; }
-
-  /* ---------- Composer ---------- */
-  .composer{
-    display:flex;
-    align-items:flex-end;
-    gap:10px;
-    padding:14px 20px 18px;
-    border-top:1px solid var(--line);
-    background:var(--bg);
-    flex-shrink:0;
-  }
-  textarea{
-    flex:1;
-    resize:none;
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:11px 14px;
-    font-family:'Work Sans', sans-serif;
-    font-size:14.5px;
-    color:var(--ink);
-    background:var(--surface);
-    max-height:120px;
-    line-height:1.4;
-  }
-  textarea:focus{
-    outline:none;
-    border-color:var(--accent);
-  }
-  button.send{
-    background:var(--accent);
-    border:none;
-    color:#fff;
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-    transition:background .15s ease, transform .1s ease;
-  }
-  button.send:hover:not(:disabled){ background:#B58731; }
-  button.send:active:not(:disabled){ transform:scale(.94); }
-  button.send:disabled{ background:var(--accent-soft); cursor:not-allowed; }
-
-  ::-webkit-scrollbar{ width:8px; }
-  ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:8px; }
-
-  @media (prefers-reduced-motion: reduce){
-    .typing span{ animation:none; }
-  }
-</style>
+<title>Guia de Acesso e Permanência nas Universidades</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/pagina.css">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="page-ebook">
 
-<div class="app">
-  <header>
-    <svg class="compass" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="20" r="18" stroke="#1F3D2E" stroke-width="1.6"/>
-      <circle cx="20" cy="20" r="1.8" fill="#C9973A"/>
-      <path d="M20 8 L23.5 20 L20 32 L16.5 20 Z" fill="#1F3D2E"/>
-      <path d="M20 8 L23.5 20 L20 20 Z" fill="#C9973A"/>
-    </svg>
-    <div class="header-text">
-      <h1>Guida</h1>
-      <p>Sua bússola para o acesso e a permanência na universidade</p>
+<nav class="top-nav">
+    <ul>
+        <li class="active"><a href="#acesso-section">Acesso</a></li>
+        <li><a href="#permanencia-section">Permanência</a></li>
+        <li><a href="#institutos-section">Institutos Federais</a></li>
+        <li><a href="#acoes-section">Ações Governamentais</a></li>
+        <li><a href="#exterior-section">Estudos no Exterior</a></li>
+    </ul>
+</nav>
+
+<!-- ACESSO -->
+<div class="section-wrapper acesso-bg">
+    <div id="acesso-section" class="container section section--visible">
+        <main class="content-wrapper">
+            <div class="left-column">
+                <h1>Guia de Acesso e<br>Permanência nas<br>Universidades</h1>
+                <div class="description-text">
+                    <p>Tudo que você precisa saber para entrar e se manter no Ensino Superior — programas, auxílios, institutos federais e muito mais, numa publicação gratuita do Instituto JCA.</p>
+                </div>
+                <div class="hero-cta">
+                    <a href="#permanencia-section" class="btn-site">Explorar o Guia</a>
+                    <a href="#" class="btn-outline" onclick="document.getElementById('chat-window').classList.add('open');document.getElementById('chat-input').focus();return false;">Perguntar à Guida</a>
+                </div>
+            </div>
+            <div class="right-column video-column">
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/ytd_IGfpkrM?si=1ejfWeU8JV0sYpwD"
+                        title="YouTube video player" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+            </div>
+        </main>
     </div>
-    <button class="settings-toggle" id="settingsToggle" title="Configurações da API" aria-label="Configurações da API">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
-      </svg>
-    </button>
-  </header>
+</div>
 
-  <div class="settings-panel" id="settingsPanel">
-    <label for="apiUrlInput">Endereço da API (endpoint /perg)</label>
-    <input type="text" id="apiUrlInput" value="/perg">
-    <p class="hint">Como o front é servido pelo próprio FastAPI (StaticFiles), o caminho relativo "/perg" já funciona. Só troque se for apontar pra outro servidor.</p>
-  </div>
-
-  <div class="messages" id="messages">
-    <div class="empty-state" id="emptyState">
-      <svg class="compass" width="36" height="36" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="20" cy="20" r="18" stroke="#4C5D53" stroke-width="1.4"/>
-        <circle cx="20" cy="20" r="1.6" fill="#C9973A"/>
-        <path d="M20 8 L23.5 20 L20 32 L16.5 20 Z" fill="#4C5D53"/>
-      </svg>
-      <h2>Por onde começamos?</h2>
-      <p>Pergunte sobre acesso, permanência ou qualquer dúvida sobre a universidade.</p>
+<!-- PERMANÊNCIA -->
+<div class="section-wrapper permanencia-bg">
+    <div id="permanencia-section" class="container section">
+        <main class="content-wrapper permanencia-layout">
+            <div class="title-col">
+                <h1>Permanência na Faculdade<br><span class="subtitle">O sucesso não termina na entrada. Descubra como permanecer e prosperar na universidade!</span></h1>
+            </div>
+            <div class="permanencia-col cards-col">
+                <div class="info-card">
+                    <h3>📋 O que é Permanência</h3>
+                    <p>Conjunto de políticas e auxílios que viabilizam a continuidade dos estudos para estudantes em vulnerabilidade socioeconômica.</p>
+                </div>
+                <div class="info-card">
+                    <h3>📝 Como Solicitar</h3>
+                    <ol class="steps-list">
+                        <li>Leia o edital da sua universidade</li>
+                        <li>Preencha o formulário de inscrição</li>
+                        <li>Separe os documentos exigidos</li>
+                        <li>Envie e acompanhe a análise</li>
+                        <li>Verifique resultados e prazos</li>
+                        <li>Renove periodicamente</li>
+                    </ol>
+                </div>
+                <div class="info-card">
+                    <h3>📄 Documentos Necessários</h3>
+                    <ul class="docs-list">
+                        <li>Identidade e CPF</li>
+                        <li>Comprovantes de renda familiar</li>
+                        <li>Comprovante de residência</li>
+                        <li>Histórico ou declaração de matrícula</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="permanencia-col cards-col">
+                <div class="info-card">
+                    <h3>🎯 Programas Nacionais</h3>
+                    <ul class="programs-list">
+                        <li><strong>PNAES:</strong> Moradia, alimentação, transporte, saúde</li>
+                        <li><strong>Bolsa Permanência MEC:</strong> Indígenas e quilombolas</li>
+                        <li><strong>Bolsa Prouni:</strong> Para bolsistas Prouni</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3>🏫 Universidades do RJ</h3>
+                    <div class="universities-grid">
+                        <span>UFF</span>
+                        <span>UFRJ</span>
+                        <span>UERJ</span>
+                        <span>UNIRIO</span>
+                        <span>UFRRJ</span>
+                        <span>UENF</span>
+                        <span>PUC-RJ</span>
+                    </div>
+                    <p class="small-note">Consulte a Pró-Reitoria de cada instituição para editais de auxílios.</p>
+                </div>
+                <div class="info-card">
+                    <h3>💡 Dicas Essenciais</h3>
+                    <ul class="tips-list">
+                        <li>Cadastre-se nos restaurantes universitários</li>
+                        <li>Solicite auxílio moradia ou transporte</li>
+                        <li>Use apoio psicológico e pedagógico</li>
+                        <li>Busque monitoria e estágios</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
     </div>
-  </div>
+</div>
 
-  <div class="composer">
-    <textarea id="input" rows="1" placeholder="Digite sua dúvida..."></textarea>
-    <button class="send" id="sendBtn" aria-label="Enviar">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9 22 2Z"/>
-      </svg>
+<!-- INSTITUTOS FEDERAIS -->
+<div class="section-wrapper institutos-bg">
+    <div id="institutos-section" class="container section">
+        <main class="content-wrapper institutos-layout">
+            <div class="title-col">
+                <h1>Institutos Federais<br><span class="subtitle">Excelência técnica e tecnológica gratuita no RJ</span></h1>
+            </div>
+
+            <div class="instituto-card">
+                <div class="card-header">
+                    <h2>CEFET/RJ</h2>
+                    <p>Centro Federal de Educação Tecnológica Celso Suckow da Fonseca</p>
+                </div>
+                <div class="card-body">
+                    <div class="info-group">
+                        <h4>📍 Campus (8)</h4>
+                        <p>Maracanã, Angra dos Reis, Itaguaí, Maria da Graça, Nova Friburgo, Nova Iguaçu, Petrópolis, Valença.</p>
+                    </div>
+                    <div class="info-group">
+                        <h4>🎓 Cursos</h4>
+                        <div class="tags"><span>Bacharelado</span><span>Licenciatura</span><span>Tecnológico</span></div>
+                    </div>
+                    <div class="info-group">
+                        <h4>🤝 Assistência</h4>
+                        <ul>
+                            <li><strong>PAE:</strong> Alimentação, Transporte, Material</li>
+                            <li><strong>PAED:</strong> Apoio a pessoas com deficiência</li>
+                            <li><strong>PAEM:</strong> Auxílio para estudantes mães</li>
+                        </ul>
+                    </div>
+                    <a href="http://www.cefet-rj.br" target="_blank" class="btn-site">Visitar Site</a>
+                </div>
+            </div>
+
+            <div class="instituto-card">
+                <div class="card-header">
+                    <h2>IFRJ</h2>
+                    <p>Instituto Federal de Educação, Ciência e Tecnologia do Rio de Janeiro</p>
+                </div>
+                <div class="card-body">
+                    <div class="info-group">
+                        <h4>📍 Campus (15)</h4>
+                        <p>Rio de Janeiro, Niterói, Duque de Caxias, Nilópolis, São Gonçalo, Volta Redonda e mais.</p>
+                    </div>
+                    <div class="info-group">
+                        <h4>🎓 Cursos</h4>
+                        <div class="tags"><span>Bacharelado</span><span>Licenciatura</span></div>
+                    </div>
+                    <div class="info-group">
+                        <h4>🤝 Assistência</h4>
+                        <ul>
+                            <li>Auxílio Moradia, Transporte e Alimentação</li>
+                            <li>Auxílio Didático e Creche</li>
+                        </ul>
+                    </div>
+                    <a href="https://portal.ifrj.edu.br" target="_blank" class="btn-site">Visitar Site</a>
+                </div>
+            </div>
+
+            <div class="instituto-card">
+                <div class="card-header">
+                    <h2>IFFluminense</h2>
+                    <p>Instituto Federal Fluminense</p>
+                </div>
+                <div class="card-body">
+                    <div class="info-group">
+                        <h4>📍 Campus (12)</h4>
+                        <p>Campos, Macaé, Cabo Frio, Itaperuna, Maricá e mais 7 unidades.</p>
+                    </div>
+                    <div class="info-group">
+                        <h4>🎓 Cursos</h4>
+                        <div class="tags"><span>Bacharelado</span><span>Licenciatura</span><span>Tecnológico</span></div>
+                    </div>
+                    <div class="info-group">
+                        <h4>🤝 Assistência</h4>
+                        <ul>
+                            <li>Bolsa Permanência e Auxílio Moradia</li>
+                            <li><strong>CELIFF:</strong> Centro de Línguas gratuito</li>
+                        </ul>
+                    </div>
+                    <a href="https://www.iff.edu.br" target="_blank" class="btn-site">Visitar Site</a>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- AÇÕES GOVERNAMENTAIS -->
+<div class="section-wrapper acoes-bg">
+    <div id="acoes-section" class="container section">
+        <main class="content-wrapper acoes-layout">
+            <div class="title-col">
+                <h1>Ações Governamentais<br><span class="subtitle">Programas de apoio do estado e municípios</span></h1>
+            </div>
+
+            <div class="acao-card">
+                <div class="acao-header"><h3>Estado do Rio de Janeiro</h3></div>
+                <div class="acao-body">
+                    <div class="acao-item">
+                        <h4>🍽️ Restaurantes do Povo</h4>
+                        <p>Refeições a baixo custo (R$ 0,50 a R$ 2,00) para estudantes e população em geral.</p>
+                        <ul>
+                            <li><strong>Bangu:</strong> Rua Francisco Real, 1780</li>
+                            <li><strong>Bonsucesso:</strong> Av. Brasil, 6357</li>
+                            <li><strong>Niterói:</strong> Av. Visconde do Rio Branco, 281</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="acao-card">
+                <div class="acao-header"><h3>Rio de Janeiro (Capital)</h3></div>
+                <div class="acao-body">
+                    <div class="acao-item">
+                        <h4>🚌 Passe Livre Universitário</h4>
+                        <p>Gratuidade em ônibus municipais, BRT e VLT.</p>
+                        <ul>
+                            <li><strong>Direito:</strong> Bolsistas PROUNI, Cotistas ou renda per capita até 1 salário mínimo</li>
+                            <li><strong>Benefício:</strong> 4 viagens/dia, 76 viagens/mês</li>
+                        </ul>
+                        <a href="https://www.cartaoriocard.com.br" target="_blank" class="link-externo">Solicitar Cartão ↗</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="acao-card">
+                <div class="acao-header"><h3>Maricá</h3></div>
+                <div class="acao-body">
+                    <div class="acao-item">
+                        <h4>🎓 Passaporte Universitário</h4>
+                        <p>Bolsas integrais ou parciais para graduação.</p>
+                        <ul>
+                            <li><strong>Bolsa 100%:</strong> Renda até 6 salários mínimos</li>
+                            <li><strong>Contrapartida:</strong> 20h mensais de serviço à comunidade</li>
+                        </ul>
+                        <a href="https://passaporteuniversitario.marica.rj.gov.br" target="_blank" class="link-externo">Saiba Mais ↗</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="acao-card">
+                <div class="acao-header"><h3>Niterói</h3></div>
+                <div class="acao-body">
+                    <div class="acao-item">
+                        <h4>🤝 Agentes pela Cidadania</h4>
+                        <p>Bolsa auxílio de R$ 600,00 para universitários.</p>
+                        <ul>
+                            <li><strong>Requisitos:</strong> Morar em Niterói, renda até 3 salários mínimos, Licenciatura</li>
+                            <li><strong>Vagas:</strong> 70 UFF + 30 outras IES</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="acao-card">
+                <div class="acao-header"><h3>São Gonçalo</h3></div>
+                <div class="acao-body">
+                    <div class="acao-item">
+                        <h4>🗣️ CIUG - Centro de Línguas</h4>
+                        <p>Cursos gratuitos de Inglês, Espanhol, Francês e Redação.</p>
+                        <ul>
+                            <li><strong>Público:</strong> Estudantes e comunidade, a partir de 13 anos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="acao-card">
+                <div class="acao-header"><h3>Itaboraí</h3></div>
+                <div class="acao-body">
+                    <div class="acao-item">
+                        <h4>🚌 Transporte Social Universitário</h4>
+                        <p>Transporte gratuito para universitários, com renovação semestral.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- ESTUDOS NO EXTERIOR -->
+<div class="section-wrapper exterior-bg">
+    <div id="exterior-section" class="container section">
+        <main class="content-wrapper exterior-layout">
+            <div class="title-col">
+                <h1>Estudos no Exterior<br><span class="subtitle">O mundo é a sua sala de aula</span></h1>
+            </div>
+
+            <div class="exterior-card">
+                <div class="exterior-header"><h3>UFF</h3><p>Universidade Federal Fluminense</p></div>
+                <div class="exterior-body">
+                    <ul>
+                        <li><strong>Mobilidade Regular:</strong> 1 semestre em IES parceiras</li>
+                        <li><strong>Bolsas Santander:</strong> Ibero-Americanas e Top España</li>
+                        <li><strong>REARI-RJ:</strong> Utrecht Network e Aix-Marseille</li>
+                    </ul>
+                    <a href="https://www.uff.br/?q=programas-de-mobilidade" target="_blank" class="btn-exterior">Saiba Mais</a>
+                </div>
+            </div>
+
+            <div class="exterior-card">
+                <div class="exterior-header"><h3>UFRJ</h3><p>Universidade Federal do Rio de Janeiro</p></div>
+                <div class="exterior-body">
+                    <ul>
+                        <li><strong>Mobilidade Regular:</strong> Centenas de parceiros</li>
+                        <li><strong>SMILE:</strong> Rede Magalhães (Europa, AL e Caribe)</li>
+                    </ul>
+                    <a href="https://internacional.ufrj.br/programas-de-mobilidade/?" target="_blank" class="btn-exterior">Saiba Mais</a>
+                </div>
+            </div>
+
+            <div class="exterior-card">
+                <div class="exterior-header"><h3>UERJ</h3><p>Universidade do Estado do Rio de Janeiro</p></div>
+                <div class="exterior-body">
+                    <ul>
+                        <li><strong>Destinos:</strong> Europa, EUA, Austrália, Japão, Canadá e AL</li>
+                        <li><strong>Convênios:</strong> Diretos ou via agências de fomento</li>
+                    </ul>
+                    <a href="http://www.dircint.uerj.br" target="_blank" class="btn-exterior">Saiba Mais</a>
+                </div>
+            </div>
+
+            <div class="exterior-card">
+                <div class="exterior-header"><h3>UENF</h3><p>Univ. Estadual do Norte Fluminense</p></div>
+                <div class="exterior-body">
+                    <ul>
+                        <li><strong>FAPERJ/França:</strong> Pesquisa conjunta</li>
+                        <li><strong>HUAWEI-SRE:</strong> Mulheres na Tecnologia</li>
+                    </ul>
+                    <a href="https://uenf.br/portal/informes-internos/assaii-divulga-oportunidades-no-exterior/" target="_blank" class="btn-exterior">Saiba Mais</a>
+                </div>
+            </div>
+
+            <div class="exterior-card">
+                <div class="exterior-header"><h3>UFRRJ</h3><p>Universidade Federal Rural do RJ</p></div>
+                <div class="exterior-body">
+                    <ul>
+                        <li><strong>Santander Luso-Brasileiras:</strong> Portugal</li>
+                        <li><strong>Santander Ibero-Americana:</strong> Países ibero-americanos</li>
+                    </ul>
+                    <a href="https://portal.ufrrj.br/pro-reitoria-de-graduacao/programas/programa-mobilidade-estudantil/" target="_blank" class="btn-exterior">Saiba Mais</a>
+                </div>
+            </div>
+
+            <div class="exterior-card">
+                <div class="exterior-header"><h3>PUC-Rio</h3><p>Pontifícia Universidade Católica</p></div>
+                <div class="exterior-body">
+                    <ul>
+                        <li><strong>Alcance:</strong> +300 convênios em todos os continentes</li>
+                        <li><strong>Duração:</strong> 1 ou 2 semestres</li>
+                    </ul>
+                    <a href="https://www.puc-rio.br/ccci/academico/" target="_blank" class="btn-exterior">Saiba Mais</a>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<footer class="site-footer-flow">
+    <div class="footer-social">
+        <a href="https://instagram.com/instituto.jca" target="_blank">@instituto.jca</a>
+        <a href="https://facebook.com/institutojca" target="_blank">facebook.com/institutojca</a>
+        <a href="tel:+5521971080952">(21) 97108-0952</a>
+    </div>
+    <p>Feito com ❤️ pelo <strong>Instituto JCA</strong> · Publicação gratuita</p>
+</footer>
+
+<!-- CHAT GUIDA -->
+<div id="chat-bubble">
+    <div id="chat-window">
+        <div id="chat-header">
+            <div class="chat-avatar"><img src="chat/imagens/guida.png" alt="Guida"></div>
+            <div class="chat-header-info">
+                <div class="chat-header-name">Guida</div>
+                <div class="chat-status"><div class="chat-status-dot"></div>Online agora</div>
+            </div>
+            <button id="chat-close">✕</button>
+        </div>
+        <div id="chat-messages">
+            <div class="msg bot">Olá! Sou a Guida 👋 Tire suas dúvidas sobre o Guia de Acesso e Permanência nas Universidades!</div>
+        </div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Digite sua pergunta..." autocomplete="off">
+            <button id="chat-send"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+        </div>
+    </div>
+    <button id="chat-toggle" title="Falar com Guida">
+        <img src="chat/imagens/guida.png" alt="Guida">
     </button>
-  </div>
+</div>
+
+<!-- CALCULADORA DE RENDA PER CAPITA -->
+<div id="calc-bubble">
+    <div id="calc-window">
+        <div id="calc-header">
+            <div class="chat-avatar"><img src="chat/imagens/calculadora.jpg" alt="Calculadora"></div>
+            <div class="calc-header-info">
+                <div class="calc-header-name">Calculadora de Renda</div>
+                <div class="calc-header-sub">Renda per capita familiar</div>
+            </div>
+            <button id="calc-close">✕</button>
+        </div>
+        <div id="calc-body">
+            <div>
+                <div class="calc-field-label">💰 Renda familiar total (bruta)</div>
+                <div class="calc-input-row">
+                    <span class="calc-prefix">R$</span>
+                    <input type="text" id="renda-total" placeholder="0,00" inputmode="decimal" autocomplete="off">
+                </div>
+            </div>
+            <div>
+                <div class="calc-field-label">👨‍👩‍👧‍👦 Membros do grupo familiar</div>
+                <div id="membros-list"></div>
+                <button id="btn-add-membro" style="margin-top:8px;"><span style="font-size:16px;">＋</span> Adicionar membro</button>
+            </div>
+            <button id="btn-calcular"><span>📊</span> Calcular Renda Per Capita</button>
+            <div id="calc-result">
+                <div class="result-main">
+                    <div class="result-label">Renda per capita mensal</div>
+                    <div class="result-value" id="result-value">R$ 0,00</div>
+                    <div class="result-sm" id="result-desc">por pessoa no grupo familiar</div>
+                </div>
+                <div class="result-grid">
+                    <div class="result-chip"><div class="result-chip-label">Renda total</div><div class="result-chip-value" id="chip-renda">—</div></div>
+                    <div class="result-chip"><div class="result-chip-label">Nº de membros</div><div class="result-chip-value" id="chip-membros">—</div></div>
+                    <div class="result-chip"><div class="result-chip-label">Sal. mínimos</div><div class="result-chip-value" id="chip-sm">—</div></div>
+                    <div class="result-chip"><div class="result-chip-label">Linha pobreza</div><div class="result-chip-value" id="chip-linha">—</div></div>
+                </div>
+                <div>
+                    <div class="calc-field-label" style="margin-bottom:8px;">✅ Elegibilidade a programas</div>
+                    <div class="eligibility-list" id="elig-list"></div>
+                </div>
+                <button id="btn-limpar">↩ Limpar e recalcular</button>
+            </div>
+        </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <span class="calc-tooltip">Calcular renda per capita</span>
+        <button id="calc-toggle" title="Calculadora de Renda Per Capita">🧮</button>
+    </div>
 </div>
 
 <script>
-  let historico = [];
-  let sending = false;
+// ===== CALCULADORA =====
+(function() {
+  const SM = 1518;
+  const calcWindow  = document.getElementById('calc-window');
+  const calcClose   = document.getElementById('calc-close');
+  const calcToggle  = document.getElementById('calc-toggle');
+  const rendaInput  = document.getElementById('renda-total');
+  const membrosList = document.getElementById('membros-list');
+  const addBtn      = document.getElementById('btn-add-membro');
+  const calcBtn     = document.getElementById('btn-calcular');
+  const limparBtn   = document.getElementById('btn-limpar');
+  const resultado   = document.getElementById('calc-result');
 
-  const messagesEl = document.getElementById('messages');
-  const emptyState = document.getElementById('emptyState');
-  const input = document.getElementById('input');
-  const sendBtn = document.getElementById('sendBtn');
-  const apiUrlInput = document.getElementById('apiUrlInput');
-  const settingsToggle = document.getElementById('settingsToggle');
-  const settingsPanel = document.getElementById('settingsPanel');
+  calcToggle.addEventListener('click', () => {
+    calcWindow.classList.toggle('open');
+    if (calcWindow.classList.contains('open') && membrosList.children.length === 0) addMembro('Titular', '');
+  });
+  calcClose.addEventListener('click', () => calcWindow.classList.remove('open'));
 
-  settingsToggle.addEventListener('click', () => {
-    settingsPanel.classList.toggle('open');
+  rendaInput.addEventListener('input', function() {
+    let raw = this.value.replace(/\D/g, '');
+    if (!raw) { this.value = ''; return; }
+    let num = (parseInt(raw, 10) / 100).toFixed(2);
+    this.value = num.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   });
 
-  input.addEventListener('input', () => {
-    input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-  });
-
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      enviar();
-    }
-  });
-
-  sendBtn.addEventListener('click', enviar);
-
-  function scrollToBottom(){
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  }
-
-  function startTurn(){
-    if (emptyState) emptyState.remove();
-    const turn = document.createElement('div');
-    turn.className = 'turn';
-    messagesEl.appendChild(turn);
-    return turn;
-  }
-
-  function addUserRow(turn, texto){
+  let memberCount = 0;
+  function addMembro(nome, renda) {
+    memberCount++;
     const row = document.createElement('div');
-    row.className = 'row user';
-    row.innerHTML = `<div class="bubble"></div>`;
-    row.querySelector('.bubble').textContent = texto;
-    turn.appendChild(row);
-    scrollToBottom();
-  }
-
-  function addTypingRow(turn){
-    const row = document.createElement('div');
-    row.className = 'row bot';
-    row.id = 'typingRow';
+    row.className = 'membro-row';
     row.innerHTML = `
-      <div class="bubble">
-        <div class="typing"><span></span><span></span><span></span></div>
-      </div>`;
-    turn.appendChild(row);
-    scrollToBottom();
-    return row;
+      <input type="text" placeholder="Nome (ex: Mãe)" value="${nome || ''}" class="membro-nome">
+      <input type="number" placeholder="R$ renda" min="0" step="0.01" value="${renda || ''}" class="membro-renda">
+      <button class="btn-remove-membro" title="Remover">−</button>
+    `;
+    row.querySelector('.btn-remove-membro').addEventListener('click', () => {
+      if (membrosList.children.length > 1) row.remove();
+    });
+    membrosList.appendChild(row);
+  }
+  addBtn.addEventListener('click', () => addMembro('', ''));
+
+  function parseBR(str) {
+    if (!str) return 0;
+    return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+  function fmtBRL(n) {
+    return 'R$ ' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
-  function addBotRow(turn, texto){
-    const row = document.createElement('div');
-    row.className = 'row bot';
-    row.innerHTML = `<span class="marker"></span><div class="bubble"></div>`;
-    row.querySelector('.bubble').textContent = texto;
-    turn.appendChild(row);
-    scrollToBottom();
-  }
+  calcBtn.addEventListener('click', calcular);
 
-  function addErrorRow(turn, texto){
-    const row = document.createElement('div');
-    row.className = 'row bot error';
-    row.innerHTML = `<div class="bubble"></div>`;
-    row.querySelector('.bubble').textContent = texto;
-    turn.appendChild(row);
-    scrollToBottom();
-  }
-
-  async function enviar(){
-    const pergunta = input.value.trim();
-    if (!pergunta || sending) return;
-
-    const apiUrl = apiUrlInput.value.trim();
-    if (!apiUrl) {
-      alert('Informe o endereço da API nas configurações.');
+  function calcular() {
+    let rendaTotal = parseBR(rendaInput.value);
+    let rendaMembros = 0;
+    document.querySelectorAll('.membro-renda').forEach(inp => { rendaMembros += parseFloat(inp.value) || 0; });
+    if (!rendaTotal && rendaMembros > 0) {
+      rendaTotal = rendaMembros;
+      rendaInput.value = rendaTotal.toFixed(2).replace('.', ',');
+    }
+    const nMembros = membrosList.children.length;
+    if (!rendaTotal || rendaTotal <= 0) {
+      rendaInput.closest('.calc-input-row').style.borderColor = '#ef4444';
+      setTimeout(() => rendaInput.closest('.calc-input-row').style.borderColor = '', 1500);
       return;
     }
+    const perCapita = rendaTotal / nMembros;
+    const emSM = perCapita / SM;
 
-    sending = true;
-    sendBtn.disabled = true;
-    input.value = '';
-    input.style.height = 'auto';
+    document.getElementById('result-value').textContent  = fmtBRL(perCapita);
+    document.getElementById('result-desc').textContent   = nMembros === 1 ? '1 pessoa no grupo familiar' : `${nMembros} pessoas no grupo familiar`;
+    document.getElementById('chip-renda').textContent    = fmtBRL(rendaTotal);
+    document.getElementById('chip-membros').textContent  = nMembros + ' pessoas';
+    document.getElementById('chip-sm').textContent       = emSM.toFixed(2) + ' SM';
 
-    const turn = startTurn();
-    addUserRow(turn, pergunta);
-    const typingRow = addTypingRow(turn);
+    const linhaPobreza = perCapita <= 218 ? '🔴 Extrema' : perCapita <= 436 ? '🟠 Pobreza' : '🟢 Acima';
+    document.getElementById('chip-linha').textContent = linhaPobreza;
 
-    try {
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pergunta, historico })
-      });
+    const programas = [
+      { nome: 'Bolsa Família', cond: perCapita <= 218, desc: perCapita <= 218 ? 'Elegível (per capita ≤ R$ 218)' : 'Não elegível (per capita > R$ 218)' },
+      { nome: 'CadÚnico', cond: perCapita <= 3 * SM, desc: perCapita <= 3 * SM ? 'Elegível (per capita ≤ 3 SM)' : 'Não elegível' },
+      { nome: 'PROUNI (bolsa integral)', cond: emSM <= 1.5, desc: emSM <= 1.5 ? 'Elegível (per capita ≤ 1,5 SM)' : emSM <= 3 ? 'Bolsa parcial (50%) — per capita ≤ 3 SM' : 'Não elegível' },
+      { nome: 'PROUNI (bolsa 50%)', cond: emSM <= 3, desc: emSM <= 3 ? 'Elegível (per capita ≤ 3 SM)' : 'Não elegível' },
+      { nome: 'FIES', cond: emSM <= 3, desc: emSM <= 3 ? 'Pode solicitar (per capita ≤ 3 SM)' : 'Renda acima do limite' },
+      { nome: 'Passe Livre Universitário (RJ)', cond: emSM <= 1, desc: emSM <= 1 ? 'Elegível (per capita ≤ 1 SM)' : 'Verifique critérios adicionais' },
+      { nome: 'Auxílio Permanência PNAES', cond: emSM <= 1.5, desc: emSM <= 1.5 ? 'Elegível (per capita ≤ 1,5 SM)' : 'Consulte o edital da sua universidade' },
+    ];
 
-      if (!res.ok) {
-        throw new Error('A API respondeu com status ' + res.status);
-      }
+    const eligList = document.getElementById('elig-list');
+    eligList.innerHTML = '';
+    programas.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'eligibility-item ' + (p.cond ? 'ok' : 'no');
+      item.innerHTML = `<div class="elig-dot"></div><div><strong>${p.nome}</strong><br><span style="font-size:11px;">${p.desc}</span></div>`;
+      eligList.appendChild(item);
+    });
 
-      const data = await res.json();
-      historico = data.historico || historico;
-      typingRow.remove();
-      addBotRow(turn, data.resposta);
-
-    } catch (err) {
-      typingRow.remove();
-      addErrorRow(turn, 'Não consegui falar com a Guida agora. Verifique se a API está rodando e se o CORS está liberado. (' + err.message + ')');
-    } finally {
-      sending = false;
-      sendBtn.disabled = false;
-      input.focus();
-    }
+    resultado.classList.add('visible');
+    resultado.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+
+  limparBtn.addEventListener('click', () => {
+    rendaInput.value = '';
+    membrosList.innerHTML = '';
+    memberCount = 0;
+    addMembro('Titular', '');
+    resultado.classList.remove('visible');
+  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter' && calcWindow.classList.contains('open')) calcular(); });
+})();
 </script>
 
+<script>
+// ===== CHAT GUIDA =====
+const API_URL = '';  // vazio = mesmo servidor do FastAPI
+let historico = [];
+
+const chatWindow = document.getElementById('chat-window');
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const chatSend = document.getElementById('chat-send');
+
+document.getElementById('chat-toggle').addEventListener('click', () => {
+  chatWindow.classList.toggle('open');
+  if (chatWindow.classList.contains('open')) chatInput.focus();
+});
+document.getElementById('chat-close').addEventListener('click', () => chatWindow.classList.remove('open'));
+
+function addMsg(content, type) {
+  const m = document.createElement('div');
+  m.className = 'msg ' + type;
+  if (type === 'loading') {
+    m.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  } else {
+    m.textContent = content;
+  }
+  chatMessages.appendChild(m);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return m;
+}
+
+async function enviar() {
+  const p = chatInput.value.trim();
+  if (!p) return;
+  chatInput.value = '';
+  chatInput.disabled = chatSend.disabled = true;
+  addMsg(p, 'user');
+  const load = addMsg('', 'loading');
+  try {
+    const r = await fetch(API_URL + '/perg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pergunta: p, historico })
+    });
+    const d = await r.json();
+    load.remove();
+    if (!r.ok) {
+      addMsg(d.detail || 'Não consegui responder agora.', 'bot');
+      return;
+    }
+    historico = d.historico;
+    addMsg(d.resposta, 'bot');
+  } catch {
+    load.remove();
+    addMsg('Erro ao conectar com o servidor.', 'bot');
+  } finally {
+    chatInput.disabled = chatSend.disabled = false;
+    chatInput.focus();
+  }
+}
+
+chatSend.addEventListener('click', enviar);
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') enviar(); });
+</script>
+
+<script>
+// ===== NAV ATIVA + REVEAL DE SEÇÕES =====
+document.addEventListener('DOMContentLoaded', function () {
+    var sections = [
+        document.getElementById('acesso-section'),
+        document.getElementById('permanencia-section'),
+        document.getElementById('institutos-section'),
+        document.getElementById('acoes-section'),
+        document.getElementById('exterior-section')
+    ].filter(el => el !== null);
+
+    var navItems = document.querySelectorAll('.top-nav li a');
+
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('section--visible');
+
+                navItems.forEach(item => {
+                    var li = item.parentElement;
+                    if (item.getAttribute('href') === '#' + entry.target.id) {
+                        li.classList.add('active');
+                    } else {
+                        li.classList.remove('active');
+                    }
+                });
+
+                ['info-card', 'instituto-card', 'acao-card', 'exterior-card'].forEach(sel => {
+                    var cards = entry.target.querySelectorAll('.' + sel);
+                    cards.forEach((card, index) => {
+                        card.style.opacity = '0';
+                        card.style.animation = `fadeInUp 0.6s ease forwards ${index * 0.1}s`;
+                    });
+                });
+            }
+        });
+    }, { threshold: 0.2 });
+
+    sections.forEach(function (section) { io.observe(section); });
+});
+</script>
 </body>
 </html>

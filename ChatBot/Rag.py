@@ -1,4 +1,5 @@
 #Rag para busca no qdrant.
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_ollama.embeddings import OllamaEmbeddings
 import os
@@ -11,6 +12,7 @@ PROMPT_TEMPLATE = """
 Você é Guida, assistente especializada no Guia de Acesso e Permanência nas Universidades.
 Responda sempre em português, de forma clara e objetiva.
 Regras obrigatórias:
+- Nao responda nada que nao esteja no Documento nem perguntas pessoais.
 - Responda como uma pessoa real conversando, não como um relatório formal.
 - Use linguagem simples e acolhedora, como se estivesse ajudando um amigo.
 - Responda somente com base no CONTEXTO DO DOCUMENTO ou no HISTÓRICO DA CONVERSA.
@@ -24,7 +26,7 @@ Regras obrigatórias:
 - Após responder a pergunta com os dados do contexto, PARE. Não adicione
   frases como "posso ajudá-lo com mais informações" ou "se precisar de
   mais detalhes". Responda apenas o que foi perguntado.
-- Quando possível(somente se existir), cite o número da página entre colchetes, ex: [Página 12].
+- Quando possível(somente se existir), cite o número da página entre colchetes, ex: [Página 12] no final da sua resposta.
 - Se a resposta envolver uma lista de itens, use marcadores (•).
 - PROIBIDO inventar qualquer dado como nomes, e-mails, telefones,
   redes sociais, endereços ou valores numéricos. Se não estiver
@@ -49,6 +51,12 @@ PERGUNTA ATUAL:
 
 RESPOSTA:
 """
+
+llm_google = ChatGoogleGenerativeAI(
+  model = "gemini-4.5-flash",
+  google_api_key = os.getenv("GOOGLE_API_KEY")
+)
+
 
 Ollama_Url = "http://localhost:11434"
 embedding_model = "bge-m3"
@@ -110,12 +118,21 @@ def resposta_guida(contexto,duvida,historico):
     contexto=contexto,
     pergunta=duvida,
   )
-  resposta = guida_llm.invoke(prompt)
+  conteudo = llm_google.invoke(prompt).content
+  print(conteudo)
+  if isinstance(conteudo, str):
+    result = conteudo
+  elif isinstance(conteudo, list) and conteudo and isinstance(conteudo[0], dict):
+    result = conteudo[0].get("text", str(conteudo))
+  else:
+    result = str(conteudo)
+
   historico.append({
     "usuario_msg":duvida,
-    "guida_msg": resposta
+    "guida_msg": result
   })
-  return resposta
+
+  return result
 
 historico = []
 
@@ -125,7 +142,7 @@ def perguntar():
   contexto = busca_qdrant(pergunta)
   resposta = resposta_guida(contexto,duvida,historico)
   print(resposta)
-  print("\n")
+  print(f"/n")
   print(historico)
 
 if __name__ == "__main__":
